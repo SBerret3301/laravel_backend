@@ -8,6 +8,7 @@ use App\Http\Controllers\CommandeController;
 use App\Http\Controllers\LigneCommandeController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\PaiementController;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UtilisateurController;
 use App\Http\Controllers\AuthController;
@@ -41,7 +42,7 @@ Route::post('/login', [AuthController::class, 'login']);
 // routes/api.php
 Route::get('/test-db', function () {
     try {
-        \DB::connection()->getPdo();
+        DB::connection()->getPdo();
         return response()->json(['success' => true, 'message' => 'Database connected ✅']);
     } catch (\Exception $e) {
         return response()->json(['success' => false, 'error' => $e->getMessage()]);
