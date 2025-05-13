@@ -34,7 +34,7 @@ RUN chmod -R 775 storage
 RUN php artisan config:clear
 RUN php artisan route:clear
 RUN php artisan view:clear
-RUN php artisan migrate --force
+# RUN php artisan migrate --force
 
 CMD php artisan serve --host=0.0.0.0 --port=8000
 

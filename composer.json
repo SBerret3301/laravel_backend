@@ -5,6 +5,7 @@
     "description": "The skeleton application for the Laravel framework.",
     "keywords": ["laravel", "framework"],
     "license": "MIT",
+    "doctrine/dbal": "^3.3",
     "require": {
         "php": "^8.2",
         "laravel/framework": "^12.0",
