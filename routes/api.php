@@ -38,6 +38,17 @@ Route::apiResource('utilisateurs', UtilisateurController::class);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+// routes/api.php
+Route::get('/test-db', function () {
+    try {
+        \DB::connection()->getPdo();
+        return response()->json(['success' => true, 'message' => 'Database connected ✅']);
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, 'error' => $e->getMessage()]);
+    }
+});
+
+
 
 Route::post('/checkout', [PaiementController::class, 'store']);
 Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']); // فقط مرة واحدة
