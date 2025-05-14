@@ -49,6 +49,9 @@ Route::get('/test-db', function () {
     }
 });
 
+Route::get('/ping', function () {
+    return response()->json(['pong' => true]);
+});
 
 
 Route::post('/checkout', [PaiementController::class, 'store']);
