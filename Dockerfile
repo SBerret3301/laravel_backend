@@ -1,34 +1,37 @@
-# المرحلة الأولى: إعداد Composer
-FROM composer:2 AS vendor
-
-WORKDIR /app
-
-# انسخ ملفات Laravel
-COPY . .
-
-# ضروري تكون .env موجودة باش ينجح install
-RUN cp .env.example .env \
-    && composer install --no-dev --prefer-dist --optimize-autoloader
-
-# المرحلة الثانية: إعداد PHP مع FPM
 FROM php:8.2-fpm
 
-# تثبيت مكتبات PHP المطلوبة
+# إعداد التوقيت
+RUN echo "Europe/Paris" > /etc/timezone
+
+# تثبيت المتطلبات
 RUN apt-get update && apt-get install -y \
-    zip unzip git curl libzip-dev libpng-dev libonig-dev libxml2-dev libpq-dev
+    git curl zip unzip libpng-dev libonig-dev libxml2-dev libzip-dev \
+    libpq-dev libjpeg-dev libfreetype6-dev libssl-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl zip gd
 
-RUN docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl
+# تثبيت Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# انسخ Composer من المرحلة السابقة
-COPY --from=vendor /app /var/www
-
+# إعداد المجلد الرئيسي
 WORKDIR /var/www
+
+# نسخ ملفات المشروع
+COPY . .
 
 # إعداد صلاحيات Laravel
 RUN chmod -R 775 storage bootstrap/cache
 
-# فتح البورت 8000
-EXPOSE 8000
+# تثبيت المكتبات
+RUN composer install --optimize-autoloader --no-dev
 
-# الأمر النهائي لتشغيل Laravel
-CMD php artisan serve --host=0.0.0.0 --port=8000
+# تفعيل الأوامر الأساسية
+RUN php artisan config:clear && \
+    php artisan route:clear && \
+    php artisan view:clear
+
+# تحديد البورت
+EXPOSE 9000
+
+# تشغيل php-fpm
+CMD ["php-fpm"]
