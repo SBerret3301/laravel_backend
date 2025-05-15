@@ -1,9 +1,10 @@
+# Use PHP with FPM
 FROM php:8.2-fpm
 
-# إعداد التوقيت
+# Set timezone
 RUN echo "Europe/Paris" > /etc/timezone
 
-# تثبيت الإضافات المطلوبة
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     git curl zip unzip libpng-dev libjpeg-dev libfreetype6-dev libzip-dev \
     libonig-dev libxml2-dev libpq-dev libcurl4-openssl-dev libssl-dev \
@@ -11,29 +12,29 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd
 
-# تثبيت Composer
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# مكان تشغيل التطبيق
+# Set working directory
 WORKDIR /var/www
 
-# نسخ الملفات
+# Copy project files
 COPY . .
 
-# صلاحيات Laravel
+# Give permissions to storage and cache
 RUN chmod -R 775 storage bootstrap/cache
 
-# تثبيت الباكجات
+# Install PHP dependencies
 RUN composer install --optimize-autoloader --no-dev
 
-# clear and cache config
+# Laravel: clear and cache config
 RUN php artisan config:clear && \
     php artisan config:cache && \
     php artisan route:cache && \
     php artisan view:cache
 
-# منفذ التشغيل
-EXPOSE 8000
+# Open port
+EXPOSE 8080
 
-# أمر التشغيل
-CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]
+# Run Laravel with PHP built-in server on port 8080
+CMD ["php", "-S", "0.0.0.0:8080", "-t", "public"]
