@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.2-fpm-slim
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -16,7 +16,8 @@ RUN apt-get update && apt-get install -y \
     libmcrypt-dev \
     libpq-dev \
     libcurl4-openssl-dev \
-    libssl-dev
+    libssl-dev \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl
