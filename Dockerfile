@@ -3,35 +3,37 @@ FROM php:8.2-fpm
 # إعداد التوقيت
 RUN echo "Europe/Paris" > /etc/timezone
 
-# تثبيت المتطلبات
+# تثبيت الإضافات المطلوبة
 RUN apt-get update && apt-get install -y \
-    git curl zip unzip libpng-dev libonig-dev libxml2-dev libzip-dev \
-    libpq-dev libjpeg-dev libfreetype6-dev libssl-dev \
+    git curl zip unzip libpng-dev libjpeg-dev libfreetype6-dev libzip-dev \
+    libonig-dev libxml2-dev libpq-dev libcurl4-openssl-dev libssl-dev \
+    && docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl zip gd
+    && docker-php-ext-install gd
 
 # تثبيت Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# إعداد المجلد الرئيسي
+# مكان تشغيل التطبيق
 WORKDIR /var/www
 
-# نسخ ملفات المشروع
+# نسخ الملفات
 COPY . .
 
-# إعداد صلاحيات Laravel
+# صلاحيات Laravel
 RUN chmod -R 775 storage bootstrap/cache
 
-# تثبيت المكتبات
+# تثبيت الباكجات
 RUN composer install --optimize-autoloader --no-dev
 
-# تفعيل الأوامر الأساسية
+# clear and cache config
 RUN php artisan config:clear && \
-    php artisan route:clear && \
-    php artisan view:clear
+    php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan view:cache
 
-# تحديد البورت
-EXPOSE 9000
+# منفذ التشغيل
+EXPOSE 8000
 
-# تشغيل php-fpm
-CMD ["php-fpm"]
+# أمر التشغيل
+CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]
